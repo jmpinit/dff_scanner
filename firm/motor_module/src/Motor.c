@@ -90,7 +90,7 @@ void motor_move(int32_t ticks) {
     char buffer[32];
     while(abs(position - start) < ticks) {
         sprintf(buffer, "%d < %d\n", abs(position - start), ticks);
-        uart_tx(buffer);
+        uart_tx_str(buffer);
         asm volatile("NOP;");
     }
 

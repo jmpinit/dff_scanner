@@ -13,6 +13,7 @@
 
 int main(void) {
     uart_init(25); // 19200 baud
+    motor_init();
 
     sei();
 

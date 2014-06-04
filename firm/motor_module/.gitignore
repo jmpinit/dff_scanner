@@ -2,6 +2,8 @@ obj/
 bin/
 data/
 
+*.swp
+
 *.out
 *.o
 *.bin

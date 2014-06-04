@@ -12,7 +12,7 @@
 #define forever for(;;)
 
 int main(void) {
-    uart_init(27); // 19200 baud
+    uart_init(25); // 19200 baud
 
     sei();
 

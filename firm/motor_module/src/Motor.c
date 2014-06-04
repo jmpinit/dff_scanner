@@ -87,12 +87,8 @@ void motor_move(int32_t ticks) {
         OCR0B = 255 - speed;
     }
 
-    char buffer[32];
-    while(abs(position - start) < ticks) {
-        sprintf(buffer, "%d < %d\n", abs(position - start), ticks);
-        uart_tx_str(buffer);
+    while(abs(position - start) < ticks)
         asm volatile("NOP;");
-    }
 
     motor_brake();
 }
@@ -109,4 +105,6 @@ void motor_brake() {
     motor_enable();
     PIN_OFF(PORTD, PIN_M_1A);
     PIN_OFF(PORTD, PIN_M_2A);
+
+    uart_tx_str("braked.\n");
 }

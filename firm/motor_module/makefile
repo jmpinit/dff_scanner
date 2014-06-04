@@ -39,7 +39,7 @@ else
 endif
 
 usbtiny: $(HEX)
-	sudo avrdude -y -c usbtiny -p $(MCU_AVRDUDE) -U flash:w:$(HEX)
+	avrdude -y -c usbtiny -p $(MCU_AVRDUDE) -U flash:w:$(HEX)
 
 $(HEX): $(OUT)
 	$(OBJCOPY) -R .eeprom -O ihex $< $@

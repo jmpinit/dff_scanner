@@ -19,7 +19,7 @@ int main(void) {
     int dir = 1;
     forever {
         while(uart_available()) {
-            char c = uart_read();
+            char c = uart_read_buff();
             
             switch(c) {
                 case '-':

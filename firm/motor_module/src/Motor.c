@@ -39,6 +39,13 @@ ISR(PCINT0_vect) {
     }
 }
 
+int abs(int n) {
+    if(n < 0)
+        return -n;
+    else
+        return n;
+}
+
 void motor_init() {
     // pin change interrupt
     // for quadrature encoder
@@ -48,7 +55,7 @@ void motor_init() {
     // motor control pins
     DDRD |= 1 << PIN_M_EN;
     DDRD |= (1 << PIN_M_1A) | (1 << PIN_M_2A);
-    MOTOR_DISABLE();
+    motor_disable();
 
     // pwm using timer0
     // phase correct, OCR0A top, no prescale
@@ -68,20 +75,20 @@ void motor_set_speed(uint8_t s) {
 }
 
 void motor_move(int32_t ticks) {
-    long start = pos;
+    long start = position;
     
     motor_enable();
     
     if(ticks > 0) {
-        OCCR0A = 255 - speed;
-        OCCR0B = 255;
+        OCR0A = 255 - speed;
+        OCR0B = 255;
     } else {
-        OCCR0A = 255;
-        OCCR0B = 255 - speed;
+        OCR0A = 255;
+        OCR0B = 255 - speed;
     }
 
-    while(abs(pos - start) < ticks)
-        volatile asm("NOP;");
+    while(abs(position - start) < ticks)
+        asm volatile("NOP;");
 
     motor_brake();
 }

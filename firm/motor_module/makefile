@@ -16,7 +16,8 @@ OUT := $(OBJDIR)$(S)$(NAME).out
 MAP := $(OBJDIR)$(S)$(NAME).map
 
 SOURCES =	main.c \
-		Serial.c
+		Serial.c \
+		Motor.c
 INCLUDES = -Isrc$(S)inc
 OBJECTS = $(patsubst %,$(OBJDIR)$(S)%,$(SOURCES:.c=.o))
 MCU := atmega328p

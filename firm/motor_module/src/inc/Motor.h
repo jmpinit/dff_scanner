@@ -11,6 +11,6 @@ void motor_disable(void);
 void motor_brake(void);
 
 void motor_move(int32_t pos);
-void motor_set_speed(int32_t vel);
+void motor_set_speed(uint8_t speed);
 
 long motor_get_pos(void);

@@ -7,7 +7,7 @@
 #include <util/delay.h>
 
 #include "Serial.h"
-//#include "Motor.h"
+#include "Motor.h"
 
 #define forever for(;;)
 
@@ -16,9 +16,39 @@ int main(void) {
 
     sei();
 
+    int dir = 1;
     forever {
-        uart_tx_str("hello world!\r\n");
-        _delay_ms(1000);
+        while(uart_available()) {
+            char c = uart_read();
+            
+            switch(c) {
+                case '-':
+                    dir = -1;
+                    break;
+                case '+':
+                    dir = 1;
+                    break;
+
+                case '1':
+                    motor_move(dir);
+                    break;
+                case '2':
+                    motor_move(dir*10);
+                    break;
+                case '3':
+                    motor_move(dir*100);
+                    break;
+                case '4':
+                    motor_move(dir*1000);
+                    break;
+                case '5':
+                    motor_move(dir*10000);
+                    break;
+                case '6':
+                    motor_move(dir*100000);
+                    break;
+            }
+        }
     }
 
     return 0;

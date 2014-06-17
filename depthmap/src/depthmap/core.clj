@@ -2,8 +2,16 @@
   (:import [javax.imageio ImageIO])
   (:import [java.awt Graphics])
   (:import [java.awt.image BufferedImage ConvolveOp Kernel])
+  (use [incanter core optimize charts datasets])
   (use [mikera.image.core :only [show]]))
-  ;(use '(incanter core optimize charts datasets))
+
+(defn cart [colls]
+  "Cartesian product of sequences."
+  (if (empty? colls)
+    '(())
+    (for [x (first colls)
+          more (cart (rest colls))]
+      (cons x more))))
 
 (defn gaussian
   [theta x]
@@ -35,10 +43,41 @@
     (.filter convolve-obj image image-dest)
     image-dest))
 
-(defn main
-  [&args]
-  (let [sample (load-an-image "./resources/images/marine/marine-1.png")
-        laplacian [0 -1  0
-                  -1  4 -1
+(defn convolve-laplacian
+  [image]
+  (let [laplacian [0 -1  0
+                   -1  4 -1
                    0 -1  0]]
-    (show (convolve sample laplacian))))
+    (convolve image laplacian)))
+
+(defn to-rgb
+  "Converts intensity 0-255 to an int-encoded RGB value."
+  [intensity]
+  (java.awt.Color/HSBtoRGB 0 0 intensity))
+
+(defn main
+  [& filenames]
+  (if (= (count filenames) 0)
+    (println "Must specify at least one image filename.")
+    (let [src-images (map load-an-image filenames)
+          width (.getWidth (first src-images))
+          height (.getHeight (first src-images))
+          num-pixels (* width height)
+          xs (range width)
+          ys (range height)
+          coordinates (cart [xs ys])
+          focus-images (map convolve-laplacian src-images)
+          depth-map (map (fn [[x y]]
+                           (let [intensities (map #(.getRGB % x y) focus-images)
+                                 zs (range (count intensities))
+                                 start [1.0 0.0 1.0 0.0]
+                                 depth (non-linear-model gaussian intensities zs start)]
+                             [[x y] depth]))
+            coordinates)
+          blank-depth-image (BufferedImage. width height BufferedImage/TYPE_INT_RGB)
+          depth-image (map (fn [[x y] depth]
+                             (.setRGB blank-depth-image x y (to-rgb depth)))
+                           depth-map)]
+    ; display depth map
+    (count depth-map)
+    (show blank-depth-image))))

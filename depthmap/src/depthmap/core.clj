@@ -2,7 +2,7 @@
   (:import [javax.imageio ImageIO])
   (:import [java.awt Graphics])
   (:import [java.awt.image BufferedImage ConvolveOp Kernel])
-  (use [incanter core optimize charts datasets])
+  (use [incanter core optimize charts])
   (use [mikera.image.core :only [show]]))
 
 (defn cart [colls]
@@ -12,6 +12,11 @@
     (for [x (first colls)
           more (cart (rest colls))]
       (cons x more))))
+
+(defn parabola
+  [theta x]
+  (let [[a b] theta]
+    (/ (Math/pow (- x b) 2) (* a 4))))
 
 (defn gaussian
   [theta x]
@@ -86,8 +91,21 @@
   [& filenames]
   (if (= (count filenames) 0)
     (println "Must specify at least one image filename.")
+    ;(do (def plot (scatter-plot))
+    ;    (view plot)
+    ;    (let [xs (range -10 10 0.1)
+    ;          theta [1.0 0.0 1.0]
+    ;          gaussian-ys (map #(gaussian theta %) xs)
+    ;          parabola-ys (map #(Math/log %) gaussian-ys)
+    ;          modelled (non-linear-model parabola parabola-ys xs [-1.0 0.001])]
+    ;      (print modelled)
+    ;      (add-lines plot xs gaussian-ys)
+    ;      (add-lines plot xs parabola-ys)
+    ;      ;(add-lines plot xs (map #(parabola [-0.5 0] %) xs)) ; correct coefs
+    ;      (add-lines plot xs (:fitted modelled))))
+
     (let [src-images (map load-an-image filenames)
-          z-resolution (int (div 255 (count src-images)))
+          z-resolution (int (div 5000 (count src-images)))
           width (.getWidth (first src-images))
           height (.getHeight (first src-images))
           num-pixels (* width height)
@@ -99,21 +117,24 @@
           ;      (view plot))
           depth-map (map (fn [[x y]]
                            (let [intensities (map #(rgb-to-intensity (.getRGB % x y)) focus-images)
-                                 ;zs (range (count intensities))
+                                 zs (range (count intensities))
                                  ;_ (let [smallest (apply min intensities)
                                  ;      normed (map #(- % smallest) intensities)]
                                  ;  (add-lines plot zs normed))
                                  ;focus-curve (fit-gaussian zs intensities)
                                  ;depth (apply max-gaussian focus-curve)]
-                                 depth (argmax intensities)]
+                                 ;depth (argmax intensities)]
+                                 logged (map #(Math/log %) intensities)
+                                 [_ depth] (:coefs (non-linear-model parabola logged zs [-1.0 0.001]))]
                              [[x y] depth]))
-            coordinates)
+                         coordinates)
           blank-depth-image (BufferedImage. width height BufferedImage/TYPE_INT_RGB)
           depth-image (doall (map (fn [[[x y] depth]]
-                                    (let [dc (* depth z-resolution)]
+                                    (let [dc (max (min (int (* depth z-resolution)) 5000) 0)
+                                          _ (println depth)]
                                           ;_ (println (format "%x" (to-rgb dc dc dc)))]
                                       (.setRGB blank-depth-image x y (to-rgb dc dc dc))))
                                   depth-map))]
       ; display depth map
-    (show blank-depth-image)
-    )))
+      (show blank-depth-image)
+      )))
